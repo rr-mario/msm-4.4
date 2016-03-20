@@ -709,6 +709,7 @@ CONFIG_QMI_ENCDEC=y
 # ResurrectedKernel Extra
 #
 CONFIG_IOSCHED_MAPLE=y
+CONFIG_STATE_NOTIFIER=y
 
 #
 # Qualcomm Atheros CLD WLAN module
