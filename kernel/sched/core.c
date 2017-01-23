@@ -2334,6 +2334,18 @@ void sched_exit(struct task_struct *p)
 	task_rq_unlock(rq, p, &flags);
 	free_task_load_ptrs(p);
 }
+
+unsigned long sched_get_busy(int cpu)
+{
+	struct cpumask query_cpu = CPU_MASK_NONE;
+	struct sched_load busy;
+
+	cpumask_set_cpu(cpu, &query_cpu);
+	sched_get_cpus_busy(&busy, &query_cpu);
+
+	return busy.prev_load;
+}
+
 #endif /* CONFIG_SCHED_HMP */
 
 /*
