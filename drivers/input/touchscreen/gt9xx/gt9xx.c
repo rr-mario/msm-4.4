@@ -46,6 +46,7 @@ static const char *goodix_ts_name = "goodix-ts";
 static const char *goodix_input_phys = "input/ts";
 struct i2c_client *i2c_connect_client;
 static struct proc_dir_entry *gtp_config_proc;
+static struct proc_dir_entry *gtp_dt2w_proc;
 #ifdef CONFIG_TOUCHSCREEN_GT9XX_SELFTEST
 extern void gtp_test_sysfs_init(void);
 extern void gtp_test_sysfs_deinit(void);
@@ -1085,6 +1086,28 @@ static s32 gtp_init_panel(struct goodix_ts_data *ts)
 	return 0;
 }
 
+static ssize_t gtp_dt2w_read_proc(struct file *file, char __user *page,
+				size_t size, loff_t *ppos)
+{
+	struct goodix_ts_data *ts = i2c_get_clientdata(i2c_connect_client);
+	char * value = NULL;
+
+	if (*ppos == 0) {
+		if (ts->pdata->slide_wakeup) {
+			value = "1\n";
+		} else {
+			value = "0\n";
+		}
+
+		if (copy_to_user(page, value, 2) == 0) {
+			*ppos += 2;
+			return 2;
+		}
+	}
+
+	return 0;
+}
+
 static ssize_t gtp_config_read_proc(struct file *file, char __user *page,
 				    size_t size, loff_t *ppos)
 {
@@ -1130,6 +1153,27 @@ static ssize_t gtp_config_read_proc(struct file *file, char __user *page,
 	}
 }
 
+static ssize_t gtp_dt2w_write_proc(struct file *filp,
+					const char __user *buffer,
+					size_t count, loff_t *off)
+{
+	char value = 0;
+	struct goodix_ts_data *ts = i2c_get_clientdata(i2c_connect_client);
+
+	if (copy_from_user(&value, buffer, sizeof(value))) {
+		goto out;
+	}
+
+	if (value == '1') {
+		ts->pdata->slide_wakeup = 1;
+	} else {
+		ts->pdata->slide_wakeup = 0;
+	}
+
+out:
+	return count;
+}
+
 static ssize_t gtp_config_write_proc(struct file *filp,
 				     const char __user *buffer,
 				     size_t count, loff_t *off)
@@ -1162,6 +1206,12 @@ static const struct file_operations config_proc_ops = {
 	.owner = THIS_MODULE,
 	.read = gtp_config_read_proc,
 	.write = gtp_config_write_proc,
+};
+
+static const struct file_operations dt2w_proc_ops = {
+	.owner = THIS_MODULE,
+	.read = gtp_dt2w_read_proc,
+	.write = gtp_dt2w_write_proc,
 };
 
 #define TP_INFO_MAX_LENGTH 50
@@ -1405,6 +1455,16 @@ static int gtp_create_file(struct goodix_ts_data *ts)
 		dev_info(&client->dev, "create proc entry %s success\n",
 			 GT91XX_CONFIG_PROC_FILE);
 
+	gtp_dt2w_proc = NULL;
+	gtp_dt2w_proc = proc_create("gt9xx_dt2w", 0664, NULL, &dt2w_proc_ops);
+
+	if (gtp_dt2w_proc == NULL)
+		dev_err(&client->dev, "create_proc_entry %s failed\n",
+				"gt9xx_dt2w");
+	else
+		dev_info(&client->dev, "create proc entry %s success\n",
+				"gt9xx_dt2w");
+
 	ret = sysfs_create_group(&client->dev.kobj, &gtp_attr_group);
 
 	if (ret) {
@@ -1419,6 +1479,7 @@ static int gtp_create_file(struct goodix_ts_data *ts)
 	return 0;
 exit_free_config_proc:
 	remove_proc_entry(GT91XX_CONFIG_PROC_FILE, gtp_config_proc);
+	remove_proc_entry("gt9xx_dt2w", gtp_dt2w_proc);
 	return -ENODEV;
 }
 
@@ -2411,6 +2472,7 @@ static int gtp_drv_remove(struct i2c_client *client)
 	if (ts->tp_fw_version_proc)
 		proc_remove(ts->tp_fw_version_proc);
 	remove_proc_entry(GT91XX_CONFIG_PROC_FILE, gtp_config_proc);
+	remove_proc_entry("gt9xx_dt2w", gtp_dt2w_proc);
 	sysfs_remove_group(&client->dev.kobj, &gtp_attr_group);
 #ifdef CONFIG_TOUCHSCREEN_GT9XX_DEBUG
 	if (ts->pdata->create_wr_node)
