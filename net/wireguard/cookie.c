@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "cookie.h"
@@ -38,7 +38,7 @@ static void precompute_key(u8 key[NOISE_SYMMETRIC_KEY_LEN],
 	blake2s_init(&blake, NOISE_SYMMETRIC_KEY_LEN);
 	blake2s_update(&blake, label, COOKIE_KEY_LABEL_LEN);
 	blake2s_update(&blake, pubkey, NOISE_PUBLIC_KEY_LEN);
-	blake2s_final(&blake, key, NOISE_SYMMETRIC_KEY_LEN);
+	blake2s_final(&blake, key);
 }
 
 /* Must hold peer->handshake.static_identity->lock */
@@ -111,7 +111,7 @@ static void make_cookie(u8 cookie[COOKIE_LEN], struct sk_buff *skb,
 		blake2s_update(&state, (u8 *)&ipv6_hdr(skb)->saddr,
 			       sizeof(struct in6_addr));
 	blake2s_update(&state, (u8 *)&udp_hdr(skb)->source, sizeof(__be16));
-	blake2s_final(&state, cookie, COOKIE_LEN);
+	blake2s_final(&state, cookie);
 
 	up_read(&checker->secret_lock);
 }
@@ -202,7 +202,7 @@ void wg_cookie_message_consume(struct message_handshake_cookie *src,
 	u8 cookie[COOKIE_LEN];
 	bool ret;
 
-	if (unlikely(!wg_index_hashtable_lookup(&wg->index_hashtable,
+	if (unlikely(!wg_index_hashtable_lookup(wg->index_hashtable,
 						INDEX_HASHTABLE_HANDSHAKE |
 						INDEX_HASHTABLE_KEYPAIR,
 						src->receiver_index, &peer)))

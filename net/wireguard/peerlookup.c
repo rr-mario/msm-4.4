@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
-#include "hashtables.h"
+#include "peerlookup.h"
 #include "peer.h"
 #include "noise.h"
 
@@ -19,11 +19,17 @@ static struct hlist_head *pubkey_bucket(struct pubkey_hashtable *table,
 	return &table->hashtable[hash & (HASH_SIZE(table->hashtable) - 1)];
 }
 
-void wg_pubkey_hashtable_init(struct pubkey_hashtable *table)
+struct pubkey_hashtable *wg_pubkey_hashtable_alloc(void)
 {
+	struct pubkey_hashtable *table = kvmalloc(sizeof(*table), GFP_KERNEL);
+
+	if (!table)
+		return NULL;
+
 	get_random_bytes(&table->key, sizeof(table->key));
 	hash_init(table->hashtable);
 	mutex_init(&table->lock);
+	return table;
 }
 
 void wg_pubkey_hashtable_add(struct pubkey_hashtable *table,
@@ -74,10 +80,16 @@ static struct hlist_head *index_bucket(struct index_hashtable *table,
 				 (HASH_SIZE(table->hashtable) - 1)];
 }
 
-void wg_index_hashtable_init(struct index_hashtable *table)
+struct index_hashtable *wg_index_hashtable_alloc(void)
 {
+	struct index_hashtable *table = kvmalloc(sizeof(*table), GFP_KERNEL);
+
+	if (!table)
+		return NULL;
+
 	hash_init(table->hashtable);
 	spin_lock_init(&table->lock);
+	return table;
 }
 
 /* At the moment, we limit ourselves to 2^20 total peers, which generally might

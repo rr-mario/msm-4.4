@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "timers.h"
@@ -17,7 +17,8 @@
  * not sent one for `KEEPALIVE_TIMEOUT` ms.
  *
  * - Timer for initiating new handshake if we have sent a packet but after have
- * not received one (even empty) for `(KEEPALIVE_TIMEOUT + REKEY_TIMEOUT)` ms.
+ * not received one (even empty) for `(KEEPALIVE_TIMEOUT + REKEY_TIMEOUT) +
+ * jitter` ms.
  *
  * - Timer for zeroing out all ephemeral keys after `(REJECT_AFTER_TIME * 3)` ms
  * if no new keys have been received.
@@ -145,7 +146,8 @@ void wg_timers_data_sent(struct wg_peer *peer)
 {
 	if (!timer_pending(&peer->timer_new_handshake))
 		mod_peer_timer(peer, &peer->timer_new_handshake,
-			jiffies + (KEEPALIVE_TIMEOUT + REKEY_TIMEOUT) * HZ);
+			jiffies + (KEEPALIVE_TIMEOUT + REKEY_TIMEOUT) * HZ +
+			prandom_u32_max(REKEY_TIMEOUT_JITTER_MAX_JIFFIES));
 }
 
 /* Should be called after an authenticated data packet is received. */
@@ -192,7 +194,7 @@ void wg_timers_handshake_complete(struct wg_peer *peer)
 	del_timer(&peer->timer_retransmit_handshake);
 	peer->timer_handshake_attempts = 0;
 	peer->sent_lastminute_handshake = false;
-	getnstimeofday(&peer->walltime_last_handshake);
+	ktime_get_real_ts64(&peer->walltime_last_handshake);
 }
 
 /* Should be called after an ephemeral key is created, which is before sending a

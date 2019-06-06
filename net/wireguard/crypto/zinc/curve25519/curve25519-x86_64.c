@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
 /*
  * Copyright (c) 2017 Armando Faz <armfazh@ic.unicamp.br>. All Rights Reserved.
- * Copyright (C) 2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2018-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  * Copyright (C) 2018 Samuel Neves <sneves@dei.uc.pt>. All Rights Reserved.
  */
 
@@ -582,6 +582,7 @@ __aligned(32) static const u64 table_ladder_8k[252 * NUM_WORDS_ELTFP25519] = {
 		  0x980697f95e2937e3UL, 0x02fbba1cd0126e8cUL
 };
 
+#ifdef CONFIG_AS_ADX
 /* c is two 512-bit products: c0[0:7]=a0[0:3]*b0[0:3] and c1[8:15]=a1[4:7]*b1[4:7]
  * a is two 256-bit integers: a0[0:3] and a1[4:7]
  * b is two 256-bit integers: b0[0:3] and b1[4:7]
@@ -736,7 +737,9 @@ static void mul2_256x256_integer_adx(u64 *const c, const u64 *const a,
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11", "%r13", "%r14", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void mul2_256x256_integer_bmi2(u64 *const c, const u64 *const a,
 				      const u64 *const b)
 {
@@ -885,7 +888,9 @@ static void mul2_256x256_integer_bmi2(u64 *const c, const u64 *const a,
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11", "%r13", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_ADX
 static void sqr2_256x256_integer_adx(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1010,7 +1015,9 @@ static void sqr2_256x256_integer_adx(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11", "%r13", "%r14", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void sqr2_256x256_integer_bmi2(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1136,7 +1143,9 @@ static void sqr2_256x256_integer_bmi2(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rcx", "%rdx", "%r8", "%r9", "%r10",
 		  "%r11", "%r13", "%r14", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_ADX
 static void red_eltfp25519_2w_adx(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1201,7 +1210,9 @@ static void red_eltfp25519_2w_adx(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void red_eltfp25519_2w_bmi2(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1264,7 +1275,9 @@ static void red_eltfp25519_2w_bmi2(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rcx", "%rdx", "%r8", "%r9", "%r10",
 		  "%r11");
 }
+#endif
 
+#ifdef CONFIG_AS_ADX
 static void mul_256x256_integer_adx(u64 *const c, const u64 *const a,
 				    const u64 *const b)
 {
@@ -1354,7 +1367,9 @@ static void mul_256x256_integer_adx(u64 *const c, const u64 *const a,
 		: "memory", "cc", "%rax", "%rdx", "%r8", "%r9", "%r10", "%r11",
 		  "%r13", "%r14", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void mul_256x256_integer_bmi2(u64 *const c, const u64 *const a,
 				     const u64 *const b)
 {
@@ -1433,7 +1448,9 @@ static void mul_256x256_integer_bmi2(u64 *const c, const u64 *const a,
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11", "%r13", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_ADX
 static void sqr_256x256_integer_adx(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1499,7 +1516,9 @@ static void sqr_256x256_integer_adx(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11", "%r13", "%r14", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void sqr_256x256_integer_bmi2(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1566,7 +1585,9 @@ static void sqr_256x256_integer_bmi2(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rcx", "%rdx", "%r8", "%r9", "%r10",
 		  "%r11", "%r13", "%r14", "%r15");
 }
+#endif
 
+#ifdef CONFIG_AS_ADX
 static void red_eltfp25519_1w_adx(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1603,7 +1624,9 @@ static void red_eltfp25519_1w_adx(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rbx", "%rcx", "%rdx", "%r8", "%r9",
 		  "%r10", "%r11");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void red_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a)
 {
 	asm volatile(
@@ -1639,7 +1662,9 @@ static void red_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a)
 		: "memory", "cc", "%rax", "%rcx", "%rdx", "%r8", "%r9", "%r10",
 		  "%r11");
 }
+#endif
 
+#ifdef CONFIG_AS_ADX
 static __always_inline void
 add_eltfp25519_1w_adx(u64 *const c, const u64 *const a, const u64 *const b)
 {
@@ -1671,7 +1696,9 @@ add_eltfp25519_1w_adx(u64 *const c, const u64 *const a, const u64 *const b)
 		: "r"(c), "r"(a), "r"(b)
 		: "memory", "cc", "%rax", "%rcx", "%r8", "%r9", "%r10", "%r11");
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static __always_inline void
 add_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a, const u64 *const b)
 {
@@ -1702,6 +1729,7 @@ add_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a, const u64 *const b)
 		: "r"(c), "r"(a), "r"(b)
 		: "memory", "cc", "%rax", "%rcx", "%r8", "%r9", "%r10", "%r11");
 }
+#endif
 
 static __always_inline void
 sub_eltfp25519_1w(u64 *const c, const u64 *const a, const u64 *const b)
@@ -1769,6 +1797,7 @@ mul_a24_eltfp25519_1w(u64 *const c, const u64 *const a)
 		  "%r11");
 }
 
+#ifdef CONFIG_AS_ADX
 static void inv_eltfp25519_1w_adx(u64 *const c, const u64 *const a)
 {
 	struct {
@@ -1815,7 +1844,9 @@ static void inv_eltfp25519_1w_adx(u64 *const c, const u64 *const a)
 
 	memzero_explicit(&m, sizeof(m));
 }
+#endif
 
+#ifdef CONFIG_AS_BMI2
 static void inv_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a)
 {
 	struct {
@@ -1862,6 +1893,7 @@ static void inv_eltfp25519_1w_bmi2(u64 *const c, const u64 *const a)
 
 	memzero_explicit(&m, sizeof(m));
 }
+#endif
 
 /* Given c, a 256-bit number, fred_eltfp25519_1w updates c
  * with a number such that 0 <= C < 2**255-19.
@@ -1935,17 +1967,11 @@ static __always_inline void cselect(u8 bit, u64 *const px, const u64 *const py)
 	);
 }
 
-static __always_inline void clamp_secret(u8 secret[CURVE25519_KEY_SIZE])
-{
-	secret[0] &= 248;
-	secret[31] &= 127;
-	secret[31] |= 64;
-}
-
 static void curve25519_adx(u8 shared[CURVE25519_KEY_SIZE],
 			   const u8 private_key[CURVE25519_KEY_SIZE],
 			   const u8 session_key[CURVE25519_KEY_SIZE])
 {
+#ifdef CONFIG_AS_ADX
 	struct {
 		u64 buffer[4 * NUM_WORDS_ELTFP25519];
 		u64 coordinates[4 * NUM_WORDS_ELTFP25519];
@@ -1982,7 +2008,7 @@ static void curve25519_adx(u8 shared[CURVE25519_KEY_SIZE],
 	memcpy(m.private, private_key, sizeof(m.private));
 	memcpy(m.session, session_key, sizeof(m.session));
 
-	clamp_secret(m.private);
+	curve25519_clamp_secret(m.private);
 
 	/* As in the draft:
 	 * When receiving such an array, implementations of curve25519
@@ -2041,11 +2067,13 @@ static void curve25519_adx(u8 shared[CURVE25519_KEY_SIZE],
 	fred_eltfp25519_1w((u64 *)shared);
 
 	memzero_explicit(&m, sizeof(m));
+#endif
 }
 
 static void curve25519_adx_base(u8 session_key[CURVE25519_KEY_SIZE],
 				const u8 private_key[CURVE25519_KEY_SIZE])
 {
+#ifdef CONFIG_AS_ADX
 	struct {
 		u64 buffer[4 * NUM_WORDS_ELTFP25519];
 		u64 coordinates[4 * NUM_WORDS_ELTFP25519];
@@ -2079,7 +2107,7 @@ static void curve25519_adx_base(u8 session_key[CURVE25519_KEY_SIZE],
 
 	memcpy(m.private, private_key, sizeof(m.private));
 
-	clamp_secret(m.private);
+	curve25519_clamp_secret(m.private);
 
 	setzero_eltfp25519_1w(Ur1);
 	setzero_eltfp25519_1w(Zr1);
@@ -2135,12 +2163,14 @@ static void curve25519_adx_base(u8 session_key[CURVE25519_KEY_SIZE],
 	fred_eltfp25519_1w((u64 *)session_key);
 
 	memzero_explicit(&m, sizeof(m));
+#endif
 }
 
 static void curve25519_bmi2(u8 shared[CURVE25519_KEY_SIZE],
 			    const u8 private_key[CURVE25519_KEY_SIZE],
 			    const u8 session_key[CURVE25519_KEY_SIZE])
 {
+#ifdef CONFIG_AS_BMI2
 	struct {
 		u64 buffer[4 * NUM_WORDS_ELTFP25519];
 		u64 coordinates[4 * NUM_WORDS_ELTFP25519];
@@ -2177,7 +2207,7 @@ static void curve25519_bmi2(u8 shared[CURVE25519_KEY_SIZE],
 	memcpy(m.private, private_key, sizeof(m.private));
 	memcpy(m.session, session_key, sizeof(m.session));
 
-	clamp_secret(m.private);
+	curve25519_clamp_secret(m.private);
 
 	/* As in the draft:
 	 * When receiving such an array, implementations of curve25519
@@ -2236,11 +2266,13 @@ static void curve25519_bmi2(u8 shared[CURVE25519_KEY_SIZE],
 	fred_eltfp25519_1w((u64 *)shared);
 
 	memzero_explicit(&m, sizeof(m));
+#endif
 }
 
 static void curve25519_bmi2_base(u8 session_key[CURVE25519_KEY_SIZE],
 				 const u8 private_key[CURVE25519_KEY_SIZE])
 {
+#ifdef CONFIG_AS_BMI2
 	struct {
 		u64 buffer[4 * NUM_WORDS_ELTFP25519];
 		u64 coordinates[4 * NUM_WORDS_ELTFP25519];
@@ -2274,7 +2306,7 @@ static void curve25519_bmi2_base(u8 session_key[CURVE25519_KEY_SIZE],
 
 	memcpy(m.private, private_key, sizeof(m.private));
 
-	clamp_secret(m.private);
+	curve25519_clamp_secret(m.private);
 
 	setzero_eltfp25519_1w(Ur1);
 	setzero_eltfp25519_1w(Zr1);
@@ -2330,4 +2362,5 @@ static void curve25519_bmi2_base(u8 session_key[CURVE25519_KEY_SIZE],
 	fred_eltfp25519_1w((u64 *)session_key);
 
 	memzero_explicit(&m, sizeof(m));
+#endif
 }
