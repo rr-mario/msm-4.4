@@ -1,4 +1,4 @@
-CONFIG_LOCALVERSION="ResurrectedKernel-dev"
+CONFIG_LOCALVERSION="ResurrectedKernel v6.0-alpha"
 # CONFIG_LOCALVERSION_AUTO is not set
 # CONFIG_USELIB is not set
 CONFIG_AUDIT=y
