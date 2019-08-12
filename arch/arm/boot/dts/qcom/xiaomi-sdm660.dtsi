@@ -225,6 +225,48 @@
 
 &i2c_4 { /* BLSP1 QUP3 (TP) */
 	status = "okay";
+	ft5x46_i2c@38 {
+		compatible = "ft,ft5x46_i2c";
+		reg = <0x38>;
+		interrupt-parent = <&tlmm>;
+		vddio-supply = <&pm660_l14>;
+		vdd-supply = <&disp_vddts_vreg>;
+		/* pins used by touchscreen */
+		pinctrl-names = "pmx_ts_active","pmx_ts_suspend";
+		pinctrl-0 = <&ts_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		ft5x46_i2c,i2c-pull-up;
+		ft5x46_i2c,irqflags = <0x2008>;
+		ft5x46_i2c,x-max = <1080>;
+		ft5x46_i2c,y-max = <2160>;
+		ft5x46_i2c,z-max = <255>;
+		ft5x46_i2c,w-max = <200>;
+		ft5x46_i2c,reset-gpio = <&tlmm 66 0x00>;
+		ft5x46_i2c,irq-gpio = <&tlmm 67 0x2008>;
+		ft5x46_i2c,landing-jiffies = <1000>;
+		ft5x46_i2c,landing-threshold = <16>;
+		ft5x46_i2c,staying-threshold = <8>;
+		ft5x46_i2c,raw-min = <7000>;
+		ft5x46_i2c,raw-max = <10000>;
+		ft5x46_i2c,open-min = <4000>;
+		ft5x46_i2c,imin-cc = <500>;
+		ft5x46_i2c,imin-cg = <500>;
+		ft5x46_i2c,fw-delay-55-ms = <2>;
+		ft5x46_i2c,fw-delay-aa-ms = <2>;
+		ft5x46_i2c,fw-upgrade-id1 = <0x54>;
+		ft5x46_i2c,fw-upgrade-id2 = <0x2C>;
+		ft5x46_i2c,fw-delay-readid-ms = <20>;
+		ft5x46_i2c,firmware-array-size = <1>;
+		ft5x46_i2c,resume-in-workqueue;
+		ft5x46_i2c,cfg_0 {
+			ft5x46_i2c,chip = <0x54>;
+			ft5x46_i2c,vendor = <0x34>;
+			ft5x46_i2c,lcd-vendor = <0x36>;
+			ft5x46_i2c,fw-name = "ft5446_ofilm.fw";
+			ft5x46_i2c,tx-num = <24>;
+			ft5x46_i2c,rx-num = <13>;
+		};
+	};
 	gt9xx-i2c@5d {
 		compatible = "goodix,gt9xx";
 		reg = <0x5d>;
